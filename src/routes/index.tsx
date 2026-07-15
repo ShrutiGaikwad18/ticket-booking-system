@@ -24,7 +24,11 @@ function Home() {
   const [search, setSearch] = useState("");
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["events", category, search],
-    queryFn: () => fetchEvents({ category: category === "all" ? undefined : category, search: search || undefined }),
+    queryFn: () =>
+      fetchEvents({
+        category: category === "all" ? undefined : category,
+        search: search || undefined,
+      }),
   });
 
   return (
@@ -38,7 +42,8 @@ function Home() {
             Book seats to <span className="text-primary">unforgettable</span> nights.
           </h1>
           <p className="mt-4 text-base text-muted-foreground sm:text-lg">
-            Movies, concerts, theatre and sports — pick your seats, hold them for ten minutes, and get an instant QR ticket.
+            Movies, concerts, theatre and sports — pick your seats, hold them for ten minutes, and
+            get an instant QR ticket.
           </p>
         </div>
       </section>
@@ -84,7 +89,9 @@ function Home() {
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {events.map((e) => <EventCard key={e.id} event={e} />)}
+            {events.map((e) => (
+              <EventCard key={e.id} event={e} />
+            ))}
           </div>
         )}
       </section>

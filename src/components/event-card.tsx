@@ -34,7 +34,9 @@ export function EventCard({ event }: { event: EventCardData }) {
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="grid h-full w-full place-items-center text-muted-foreground">No image</div>
+          <div className="grid h-full w-full place-items-center text-muted-foreground">
+            No image
+          </div>
         )}
         <div className="absolute inset-x-0 top-0 flex justify-between p-3">
           <span className="rounded-full bg-background/80 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider backdrop-blur">
@@ -53,7 +55,9 @@ export function EventCard({ event }: { event: EventCardData }) {
           {event.venue && (
             <div className="flex items-center gap-1.5">
               <MapPin className="h-3 w-3 shrink-0" />
-              <span className="truncate">{event.venue.name} · {event.venue.city}</span>
+              <span className="truncate">
+                {event.venue.name} · {event.venue.city}
+              </span>
             </div>
           )}
           {event.next_show && (

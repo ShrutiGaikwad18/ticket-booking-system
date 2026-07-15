@@ -19,11 +19,16 @@ function BookingTicket() {
   if (isLoading) return <div className="mx-auto max-w-2xl px-4 py-12">Loading…</div>;
   if (!b) return <div className="mx-auto max-w-2xl px-4 py-12">Ticket not found.</div>;
   const ev = b.show?.event;
-  const seats = b.booking_seats.map((bs: { seat: { row_label: string; seat_number: number; section: string } }) => bs.seat);
+  const seats = b.booking_seats.map(
+    (bs: { seat: { row_label: string; seat_number: number; section: string } }) => bs.seat,
+  );
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <Link to="/bookings" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/bookings"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Back to bookings
       </Link>
 
@@ -34,16 +39,40 @@ function BookingTicket() {
           </div>
           <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{ev?.title}</h1>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            {b.show && <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{format(new Date(b.show.starts_at), "EEE, dd MMM yyyy · h:mm a")}</span>}
-            {ev?.venue && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{ev.venue.name}, {ev.venue.city}</span>}
+            {b.show && (
+              <span className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                {format(new Date(b.show.starts_at), "EEE, dd MMM yyyy · h:mm a")}
+              </span>
+            )}
+            {ev?.venue && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                {ev.venue.name}, {ev.venue.city}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="grid gap-6 border-t border-dashed border-border p-6 sm:grid-cols-[1fr_auto]">
           <div className="space-y-3 text-sm">
             <Row label="Booking ID" value={b.id.slice(0, 8).toUpperCase()} mono />
-            <Row label="Seats" value={seats.map((s: { row_label: string; seat_number: number }) => `${s.row_label}${s.seat_number}`).join(", ")} mono />
-            <Row label="Section" value={Array.from(new Set(seats.map((s: { section: string }) => s.section))).join(" + ")} />
+            <Row
+              label="Seats"
+              value={seats
+                .map(
+                  (s: { row_label: string; seat_number: number }) =>
+                    `${s.row_label}${s.seat_number}`,
+                )
+                .join(", ")}
+              mono
+            />
+            <Row
+              label="Section"
+              value={Array.from(new Set(seats.map((s: { section: string }) => s.section))).join(
+                " + ",
+              )}
+            />
             <Row label="Total paid" value={`₹${Number(b.total).toFixed(0)}`} />
             <Row label="Status" value={b.status} />
           </div>

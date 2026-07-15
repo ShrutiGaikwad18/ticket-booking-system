@@ -35,13 +35,17 @@ function ShowSeats() {
   const [now, setNow] = useState<Date>(new Date());
   const releaseRef = useRef<string[]>([]);
 
-  const { data: show, isLoading, refetch } = useQuery({
+  const {
+    data: show,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["show", id],
     queryFn: () => fetchShow(id),
     refetchInterval: 15000,
   });
 
-  const seats: Seat[] = show?.seats ?? [];
+  const seats = useMemo<Seat[]>(() => show?.seats ?? [], [show?.seats]);
 
   // Waitlist check
   const soldOutBySection = useMemo(() => {
@@ -81,7 +85,10 @@ function ShowSeats() {
 
   const holdMutation = useMutation({
     mutationFn: async (seatIds: string[]) => {
-      const { data, error } = await supabase.rpc("hold_seats", { _seat_ids: seatIds, _minutes: 10 });
+      const { data, error } = await supabase.rpc("hold_seats", {
+        _seat_ids: seatIds,
+        _minutes: 10,
+      });
       if (error) throw error;
       return data as Array<{ seat_id: string; ok: boolean }>;
     },
@@ -106,7 +113,11 @@ function ShowSeats() {
     mutationFn: async () => {
       const ids = Array.from(selected);
       const qr = `TICKETBOOKING-${randomUUID()}`;
-      const { data, error } = await supabase.rpc("confirm_booking", { _seat_ids: ids, _show_id: id, _qr: qr });
+      const { data, error } = await supabase.rpc("confirm_booking", {
+        _seat_ids: ids,
+        _show_id: id,
+        _qr: qr,
+      });
       if (error) throw error;
       return data as string;
     },
@@ -141,7 +152,9 @@ function ShowSeats() {
     });
   };
 
-  const total = seats.filter((s) => selected.has(s.id)).reduce((sum, s) => sum + Number(s.price), 0);
+  const total = seats
+    .filter((s) => selected.has(s.id))
+    .reduce((sum, s) => sum + Number(s.price), 0);
   const secondsLeft = holdExpiresAt ? Math.max(0, differenceInSeconds(holdExpiresAt, now)) : 0;
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const ss = String(secondsLeft % 60).padStart(2, "0");
@@ -157,7 +170,11 @@ function ShowSeats() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <Link to="/events/$id" params={{ id: show.event.id }} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/events/$id"
+        params={{ id: show.event.id }}
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Back to event
       </Link>
 
@@ -165,8 +182,16 @@ function ShowSeats() {
         <div className="min-w-0">
           <h1 className="truncate text-xl font-bold sm:text-2xl">{show.event.title}</h1>
           <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />{format(new Date(show.starts_at), "EEE, dd MMM · h:mm a")}</span>
-            {show.event.venue && <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{show.event.venue.name}</span>}
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5" />
+              {format(new Date(show.starts_at), "EEE, dd MMM · h:mm a")}
+            </span>
+            {show.event.venue && (
+              <span className="flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
+                {show.event.venue.name}
+              </span>
+            )}
           </div>
         </div>
         {holdExpiresAt && (
@@ -179,7 +204,9 @@ function ShowSeats() {
       <div className="mt-6 grid gap-6 md:grid-cols-[1fr_320px]">
         <div className="rounded-2xl border border-border/60 bg-card p-6">
           <div className="mx-auto mb-6 h-1.5 max-w-md rounded-full bg-primary/40" />
-          <div className="mb-6 text-center text-[10px] uppercase tracking-widest text-muted-foreground">Screen / Stage</div>
+          <div className="mb-6 text-center text-[10px] uppercase tracking-widest text-muted-foreground">
+            Screen / Stage
+          </div>
 
           {(["premium", "standard"] as const).map((section) => {
             const sectionRows = rows.filter((r) => grouped[r][0].section === section);
@@ -191,7 +218,11 @@ function ShowSeats() {
                     {section} · ₹{Number(grouped[sectionRows[0]][0].price).toFixed(0)}
                   </div>
                   {soldOutBySection[section] && (
-                    <Button size="sm" variant="outline" onClick={() => joinWaitlist.mutate(section)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => joinWaitlist.mutate(section)}
+                    >
                       Join waitlist
                     </Button>
                   )}
@@ -205,16 +236,22 @@ function ShowSeats() {
                           const isSel = selected.has(seat.id);
                           const isMine = seat.held_by === user?.id;
                           const color =
-                            seat.status === "booked" ? "bg-[color:var(--color-seat-booked)]/60 cursor-not-allowed"
-                            : seat.status === "held" && !isMine ? "bg-[color:var(--color-seat-held)]/60 cursor-not-allowed"
-                            : isSel ? "bg-primary text-primary-foreground ring-2 ring-primary"
-                            : "bg-[color:var(--color-seat-available)]/25 hover:bg-[color:var(--color-seat-available)]/50 text-foreground";
+                            seat.status === "booked"
+                              ? "bg-[color:var(--color-seat-booked)]/60 cursor-not-allowed"
+                              : seat.status === "held" && !isMine
+                                ? "bg-[color:var(--color-seat-held)]/60 cursor-not-allowed"
+                                : isSel
+                                  ? "bg-primary text-primary-foreground ring-2 ring-primary"
+                                  : "bg-[color:var(--color-seat-available)]/25 hover:bg-[color:var(--color-seat-available)]/50 text-foreground";
                           return (
                             <button
                               key={seat.id}
                               disabled={seat.status !== "available" && !isSel}
                               onClick={() => toggleSeat(seat)}
-                              className={cn("h-7 w-7 rounded-md text-[10px] font-mono transition-colors", color)}
+                              className={cn(
+                                "h-7 w-7 rounded-md text-[10px] font-mono transition-colors",
+                                color,
+                              )}
                               title={`${row}${seat.seat_number} — ₹${seat.price}`}
                             >
                               {seat.seat_number}
@@ -230,25 +267,41 @@ function ShowSeats() {
           })}
 
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-[color:var(--color-seat-available)]/50" /> Available</span>
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-[color:var(--color-seat-held)]/60" /> Held</span>
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-[color:var(--color-seat-booked)]/60" /> Booked</span>
-            <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm bg-primary" /> Selected</span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-sm bg-[color:var(--color-seat-available)]/50" />{" "}
+              Available
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-sm bg-[color:var(--color-seat-held)]/60" /> Held
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-sm bg-[color:var(--color-seat-booked)]/60" /> Booked
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded-sm bg-primary" /> Selected
+            </span>
           </div>
         </div>
 
         <aside className="h-fit rounded-2xl border border-border/60 bg-card p-5 md:sticky md:top-20">
           <h2 className="font-semibold">Order summary</h2>
           <div className="mt-3 text-sm text-muted-foreground">
-            {selected.size === 0 ? "No seats selected" : `${selected.size} seat${selected.size > 1 ? "s" : ""}`}
+            {selected.size === 0
+              ? "No seats selected"
+              : `${selected.size} seat${selected.size > 1 ? "s" : ""}`}
           </div>
           <div className="mt-3 max-h-40 space-y-1 overflow-y-auto text-xs font-mono">
-            {seats.filter((s) => selected.has(s.id)).map((s) => (
-              <div key={s.id} className="flex justify-between">
-                <span>{s.row_label}{s.seat_number} <span className="text-muted-foreground">· {s.section}</span></span>
-                <span>₹{Number(s.price).toFixed(0)}</span>
-              </div>
-            ))}
+            {seats
+              .filter((s) => selected.has(s.id))
+              .map((s) => (
+                <div key={s.id} className="flex justify-between">
+                  <span>
+                    {s.row_label}
+                    {s.seat_number} <span className="text-muted-foreground">· {s.section}</span>
+                  </span>
+                  <span>₹{Number(s.price).toFixed(0)}</span>
+                </div>
+              ))}
           </div>
           <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-sm">
             <span className="text-muted-foreground">Total</span>

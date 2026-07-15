@@ -21,7 +21,12 @@ type SignupRole = "customer" | "organizer";
 
 const roleOptions: { id: SignupRole; label: string; desc: string; icon: typeof UserIcon }[] = [
   { id: "customer", label: "Customer", desc: "Browse and book tickets", icon: UserIcon },
-  { id: "organizer", label: "Host", desc: "Create events, manage venues, and welcome customers", icon: Store },
+  {
+    id: "organizer",
+    label: "Host",
+    desc: "Create events, manage venues, and welcome customers",
+    icon: Store,
+  },
 ];
 
 function redirectByRoles(roles: string[]): "/admin" | "/organizer" | "/" {
@@ -52,7 +57,11 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) { setBusy(false); toast.error(error.message); return; }
+    if (error) {
+      setBusy(false);
+      toast.error(error.message);
+      return;
+    }
     const r = data.user ? await fetchRolesForUser(data.user.id) : [];
     setBusy(false);
     toast.success("Welcome back");
@@ -63,16 +72,27 @@ function AuthPage() {
     e.preventDefault();
     setBusy(true);
     const { data, error } = await supabase.auth.signUp({
-      email, password,
+      email,
+      password,
       options: {
         data: { full_name: name, requested_role: role },
         emailRedirectTo: window.location.origin,
       },
     });
-    if (error) { setBusy(false); toast.error(error.message); return; }
+    if (error) {
+      setBusy(false);
+      toast.error(error.message);
+      return;
+    }
     // Fallback: ensure role row exists in case trigger did not fire
     if (data.user) {
-      await supabase.from("user_roles").insert({ user_id: data.user.id, role }).then(() => {}, () => {});
+      await supabase
+        .from("user_roles")
+        .insert({ user_id: data.user.id, role })
+        .then(
+          () => {},
+          () => {},
+        );
     }
     const r = data.user ? await fetchRolesForUser(data.user.id) : [role];
     setBusy(false);
@@ -96,7 +116,9 @@ function AuthPage() {
             <Ticket className="h-6 w-6" />
           </div>
           <h1 className="mt-4 text-2xl font-bold">Welcome to TicketBooking</h1>
-          <p className="text-sm text-muted-foreground">Role-based access · Customer · Host · Admin</p>
+          <p className="text-sm text-muted-foreground">
+            Role-based access · Customer · Host · Admin
+          </p>
         </div>
 
         <Button variant="outline" className="w-full" onClick={google}>
@@ -115,14 +137,31 @@ function AuthPage() {
             <form onSubmit={signIn} className="space-y-3 pt-4">
               <div className="space-y-1.5">
                 <Label htmlFor="e1">Email</Label>
-                <Input id="e1" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input
+                  id="e1"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="p1">Password</Label>
-                <Input id="p1" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Input
+                  id="p1"
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
-              <Button className="w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
-              <p className="text-center text-xs text-muted-foreground">You'll be routed to the dashboard for your role.</p>
+              <Button className="w-full" disabled={busy}>
+                {busy ? "Signing in…" : "Sign in"}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                You'll be routed to the dashboard for your role.
+              </p>
             </form>
           </TabsContent>
           <TabsContent value="signup">
@@ -140,10 +179,17 @@ function AuthPage() {
                         onClick={() => setRole(opt.id)}
                         className={cn(
                           "flex flex-col items-start gap-1 rounded-xl border p-3 text-left transition-colors",
-                          active ? "border-primary bg-primary/10" : "border-border hover:border-primary/60"
+                          active
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/60",
                         )}
                       >
-                        <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-muted-foreground")} />
+                        <Icon
+                          className={cn(
+                            "h-4 w-4",
+                            active ? "text-primary" : "text-muted-foreground",
+                          )}
+                        />
                         <div className="text-sm font-medium">{opt.label}</div>
                         <div className="text-[11px] text-muted-foreground">{opt.desc}</div>
                       </button>
@@ -151,7 +197,8 @@ function AuthPage() {
                   })}
                 </div>
                 <p className="flex items-center gap-1 pt-1 text-[11px] text-muted-foreground">
-                  <ShieldCheck className="h-3 w-3" /> Admin role is assigned by existing admins only.
+                  <ShieldCheck className="h-3 w-3" /> Admin role is assigned by existing admins
+                  only.
                 </p>
               </div>
               <div className="space-y-1.5">
@@ -160,13 +207,28 @@ function AuthPage() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="e2">Email</Label>
-                <Input id="e2" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input
+                  id="e2"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="p2">Password</Label>
-                <Input id="p2" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Input
+                  id="p2"
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
-              <Button className="w-full" disabled={busy}>{busy ? "Creating…" : `Create ${getRoleLabel(role)} account`}</Button>
+              <Button className="w-full" disabled={busy}>
+                {busy ? "Creating…" : `Create ${getRoleLabel(role)} account`}
+              </Button>
             </form>
           </TabsContent>
         </Tabs>

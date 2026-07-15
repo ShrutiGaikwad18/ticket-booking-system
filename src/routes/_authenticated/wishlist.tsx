@@ -10,7 +10,10 @@ export const Route = createFileRoute("/_authenticated/wishlist")({
 });
 
 function Wishlist() {
-  const { data: events = [], isLoading } = useQuery({ queryKey: ["wishlist"], queryFn: fetchWishlist });
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ["wishlist"],
+    queryFn: fetchWishlist,
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
@@ -24,14 +27,19 @@ function Wishlist() {
           <div className="rounded-2xl border border-dashed border-border p-12 text-center">
             <Heart className="mx-auto h-8 w-8 text-muted-foreground" />
             <p className="mt-3 text-sm text-muted-foreground">Your wishlist is empty.</p>
-            <Button asChild className="mt-4"><Link to="/">Discover events</Link></Button>
+            <Button asChild className="mt-4">
+              <Link to="/">Discover events</Link>
+            </Button>
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {events.map((e) => {
               const next = (e.shows ?? [])
                 .filter((s: { starts_at: string }) => new Date(s.starts_at) > new Date())
-                .sort((a: { starts_at: string }, b: { starts_at: string }) => +new Date(a.starts_at) - +new Date(b.starts_at))[0];
+                .sort(
+                  (a: { starts_at: string }, b: { starts_at: string }) =>
+                    +new Date(a.starts_at) - +new Date(b.starts_at),
+                )[0];
               return <EventCard key={e.id} event={{ ...e, next_show: next }} />;
             })}
           </div>

@@ -5,7 +5,9 @@ export type Category = "movie" | "concert" | "sports" | "theatre";
 export async function fetchEvents(opts: { category?: Category; search?: string } = {}) {
   let q = supabase
     .from("events")
-    .select("id, title, category, poster_url, description, venue:venues(name, city), shows(id, starts_at, base_price)")
+    .select(
+      "id, title, category, poster_url, description, venue:venues(name, city), shows(id, starts_at, base_price)",
+    )
     .eq("status", "published")
     .order("created_at", { ascending: false });
   if (opts.category) q = q.eq("category", opts.category);
@@ -38,8 +40,11 @@ export async function fetchShow(id: string) {
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  data.seats.sort((a: { row_label: string; seat_number: number }, b: { row_label: string; seat_number: number }) =>
-    a.row_label.localeCompare(b.row_label) || a.seat_number - b.seat_number,
+  data.seats.sort(
+    (
+      a: { row_label: string; seat_number: number },
+      b: { row_label: string; seat_number: number },
+    ) => a.row_label.localeCompare(b.row_label) || a.seat_number - b.seat_number,
   );
   return data;
 }
@@ -66,7 +71,9 @@ export async function fetchBooking(id: string) {
 export async function fetchWishlist() {
   const { data, error } = await supabase
     .from("wishlist")
-    .select("event:events(id, title, category, poster_url, venue:venues(name, city), shows(id, starts_at, base_price))");
+    .select(
+      "event:events(id, title, category, poster_url, venue:venues(name, city), shows(id, starts_at, base_price))",
+    );
   if (error) throw error;
   return (data ?? []).map((w) => w.event).filter(Boolean);
 }

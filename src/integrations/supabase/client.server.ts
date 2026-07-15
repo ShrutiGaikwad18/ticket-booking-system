@@ -2,17 +2,25 @@
 // Server-side Supabase client with service role key - bypasses RLS.
 // Use this for admin operations in server functions and server routes only.
 // For user-authenticated queries (with RLS), use the auth middleware instead.
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
 
 function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
+  return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
+}
+
+function isPlaceholderSupabaseUrl(value: string): boolean {
+  return value.includes("your-project.supabase.co") || value.includes("your-project-id");
+}
+
+function isPlaceholderSupabaseKey(value: string): boolean {
+  return value.endsWith("_xxx") || value === "sb_publishable_xxx" || value === "sb_secret_xxx";
 }
 
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
   return (input, init) => {
     const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
+      typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
     );
 
     if (init?.headers) {
@@ -20,11 +28,14 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     }
 
     // New Supabase API keys are opaque strings, not bearer JWTs.
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
+    if (
+      isNewSupabaseApiKey(supabaseKey) &&
+      headers.get("Authorization") === `Bearer ${supabaseKey}`
+    ) {
+      headers.delete("Authorization");
     }
 
-    headers.set('apikey', supabaseKey);
+    headers.set("apikey", supabaseKey);
     return fetch(input, { ...init, headers });
   };
 }
@@ -33,12 +44,23 @@ function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (
+    !SUPABASE_URL ||
+    !SUPABASE_SERVICE_ROLE_KEY ||
+    isPlaceholderSupabaseUrl(SUPABASE_URL) ||
+    isPlaceholderSupabaseKey(SUPABASE_SERVICE_ROLE_KEY)
+  ) {
     const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_SERVICE_ROLE_KEY ? ['SUPABASE_SERVICE_ROLE_KEY'] : []),
+      ...(!SUPABASE_URL ? ["SUPABASE_URL"] : []),
+      ...(!SUPABASE_SERVICE_ROLE_KEY ? ["SUPABASE_SERVICE_ROLE_KEY"] : []),
+      ...(SUPABASE_URL && isPlaceholderSupabaseUrl(SUPABASE_URL)
+        ? ["SUPABASE_URL (placeholder value)"]
+        : []),
+      ...(SUPABASE_SERVICE_ROLE_KEY && isPlaceholderSupabaseKey(SUPABASE_SERVICE_ROLE_KEY)
+        ? ["SUPABASE_SERVICE_ROLE_KEY (placeholder value)"]
+        : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}.`;
+    const message = `Invalid Supabase environment variable(s): ${missing.join(", ")}. Update your .env with your real Supabase project URL and service role key.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }
@@ -51,7 +73,7 @@ function createSupabaseAdminClient() {
       storage: undefined,
       persistSession: false,
       autoRefreshToken: false,
-    }
+    },
   });
 }
 

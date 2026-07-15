@@ -27,7 +27,11 @@ function EventDetail() {
     queryKey: ["wishlisted", id, user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("wishlist").select("event_id").eq("event_id", id).maybeSingle();
+      const { data } = await supabase
+        .from("wishlist")
+        .select("event_id")
+        .eq("event_id", id)
+        .maybeSingle();
       return !!data;
     },
   });
@@ -48,7 +52,9 @@ function EventDetail() {
   if (isLoading) return <div className="mx-auto max-w-6xl px-4 py-12">Loading…</div>;
   if (!event) return <div className="mx-auto max-w-6xl px-4 py-12">Event not found.</div>;
 
-  const upcoming = ((event as { shows?: Array<{ id: string; starts_at: string; base_price: number }> }).shows ?? [])
+  const upcoming = (
+    (event as { shows?: Array<{ id: string; starts_at: string; base_price: number }> }).shows ?? []
+  )
     .filter((s) => new Date(s.starts_at) > new Date())
     .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at));
 
@@ -56,7 +62,9 @@ function EventDetail() {
     <div className="mx-auto max-w-6xl px-4 py-8 sm:py-12">
       <div className="grid gap-8 md:grid-cols-[300px_1fr]">
         <div className="aspect-[3/4] overflow-hidden rounded-2xl border border-border/60 bg-card">
-          {event.poster_url && <img src={event.poster_url} alt={event.title} className="h-full w-full object-cover" />}
+          {event.poster_url && (
+            <img src={event.poster_url} alt={event.title} className="h-full w-full object-cover" />
+          )}
         </div>
         <div className="min-w-0">
           <div className="text-xs uppercase tracking-wider text-primary">{event.category}</div>
@@ -87,7 +95,11 @@ function EventDetail() {
                     to="/shows/$id"
                     params={{ id: s.id }}
                     onClick={(e) => {
-                      if (!user) { e.preventDefault(); toast.error("Sign in to book"); navigate({ to: "/auth" }); }
+                      if (!user) {
+                        e.preventDefault();
+                        toast.error("Sign in to book");
+                        navigate({ to: "/auth" });
+                      }
                     }}
                     className="group flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary"
                   >
@@ -100,7 +112,9 @@ function EventDetail() {
                         From ₹{Number(s.base_price).toFixed(0)}
                       </div>
                     </div>
-                    <span className="text-xs text-primary opacity-0 transition-opacity group-hover:opacity-100">Select →</span>
+                    <span className="text-xs text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                      Select →
+                    </span>
                   </Link>
                 ))}
               </div>

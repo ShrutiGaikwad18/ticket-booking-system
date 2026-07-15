@@ -6,8 +6,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function randomUUID() {
-  const globalCrypto = typeof globalThis !== "undefined" ? (globalThis as any).crypto : undefined;
-  if (globalCrypto?.randomUUID) return globalCrypto.randomUUID();
+  const globalCrypto =
+    typeof globalThis !== "undefined" ? (globalThis as { crypto?: Crypto }).crypto : undefined;
+
+  if (globalCrypto?.randomUUID) {
+    return globalCrypto.randomUUID();
+  }
 
   const bytes = new Uint8Array(16);
   if (globalCrypto?.getRandomValues) {

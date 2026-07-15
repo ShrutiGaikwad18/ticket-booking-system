@@ -26,7 +26,12 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          <Link to="/" className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors" activeOptions={{ exact: true }} activeProps={{ className: "text-foreground" }}>
+          <Link
+            to="/"
+            className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            activeOptions={{ exact: true }}
+            activeProps={{ className: "text-foreground" }}
+          >
             Browse
           </Link>
         </nav>
@@ -35,7 +40,9 @@ export function SiteHeader() {
           {loading ? null : user ? (
             <>
               <Button asChild variant="ghost" size="icon">
-                <Link to="/wishlist"><Heart className="h-4 w-4" /></Link>
+                <Link to="/wishlist">
+                  <Heart className="h-4 w-4" />
+                </Link>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -44,19 +51,25 @@ export function SiteHeader() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">{user.email}</div>
+                  <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">
+                    {user.email}
+                  </div>
                   <div className="px-2 pb-1.5 text-[10px] uppercase tracking-wider text-primary">
                     {isAdmin ? "Admin" : isHost ? "Host" : "Customer"}
                   </div>
                   <DropdownMenuSeparator />
                   {isAdmin && (
                     <DropdownMenuItem asChild>
-                      <Link to="/admin"><Shield className="mr-2 h-4 w-4" /> Admin panel</Link>
+                      <Link to="/admin">
+                        <Shield className="mr-2 h-4 w-4" /> Admin panel
+                      </Link>
                     </DropdownMenuItem>
                   )}
                   {(isHost || isAdmin) && (
                     <DropdownMenuItem asChild>
-                      <Link to="/organizer"><Store className="mr-2 h-4 w-4" /> Host dashboard</Link>
+                      <Link to="/organizer">
+                        <Store className="mr-2 h-4 w-4" /> Host dashboard
+                      </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem asChild>
